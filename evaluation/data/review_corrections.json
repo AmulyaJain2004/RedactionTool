@@ -1,0 +1,21 @@
+{
+ "about": "Result of reading the whole prospectus next to the redactor's output. Only the corrections are stored: everything the redactor changed is counted as correct unless it is listed under wrongly_redacted, and every occurrence of a text listed under missed (that the redactor did not already cover) counts as missed PII.",
+ "wrongly_redacted": [],
+ "missed": [
+  {"type": "COMPANY", "text": "CareEdge Research"},
+  {"type": "COMPANY", "text": "Sterlite Copper"},
+  {"type": "COMPANY", "text": "Trilegal"},
+  {"type": "COMPANY", "text": "Citibank N.A."},
+  {"type": "COMPANY", "text": "State Bank of India"},
+  {"type": "COMPANY", "text": "Export-Import Bank of India"},
+  {"type": "COMPANY", "text": "I-Sec"},
+  {"type": "PERSON", "text": "Gopal BO"},
+  {"type": "ADDRESS", "text": "C-101, Embassy 247"}
+ ],
+ "not_pii": [
+  "regulators, exchanges, depositories and government bodies (SEBI, BSE, NSE, RBI, NSDL, CDSL, ...)",
+  "newspapers named as advertising media (Financial Express, Jansatta, Loksatta)",
+  "CIN, SEBI registration, firm registration and peer-review numbers",
+  "deal, filing and certificate dates, financial figures, page and section numbers"
+ ]
+}

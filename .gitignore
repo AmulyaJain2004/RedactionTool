@@ -1,0 +1,37 @@
+# Python caches and build output
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Tool caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Editor / assistant settings (local to each machine)
+.claude/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Word temporary lock files (created while a .docx is open)
+~$*.docx
+.~lock.*
+
+# Audit files written by `redact.py --audit`: they contain the ORIGINAL (real) values
+*.audit.csv
+audit*.csv
+spec.md
