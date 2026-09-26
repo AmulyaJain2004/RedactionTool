@@ -10,6 +10,7 @@ It is rule-based (regular expressions plus context rules): no NER model, no exte
 - [Quick start](#quick-start)
 - [What is redacted](#what-is-redacted)
 - [How it works](#how-it-works)
+- [Web app and hosting](#web-app-and-hosting)
 - [Project structure](#project-structure)
 - [Evaluation](#evaluation)
 - [Trade-offs and known limitations](#trade-offs-and-known-limitations)
@@ -39,7 +40,7 @@ The command prints how many values of each type were replaced. The same input an
 Run the tests and the evaluation:
 
 ```bash
-python -m unittest discover -s tests          # unit tests
+python -m unittest discover -s tests          # unit tests (the web-app tests need requirements-web.txt)
 python evaluation/run_evaluation.py           # accuracy, precision, recall, F1 on the prospectus
 python evaluation/report_docx.py              # regenerate Evaluation Report.docx
 ```
@@ -71,12 +72,57 @@ share one, and the format is kept (`+91 98765 43210` stays a 10-digit number aft
 shared surname maps to the same fake surname). Word splits text into runs (`rohan.` `dey@gmail` `.com`); the tool joins
 them, edits the text, and writes the fake into the first run so the formatting survives.
 
+## Web app and hosting
+
+`app.py` is a small Flask app: a page where a user uploads a `.docx` and downloads the redacted copy. The same code runs
+locally, in Docker and on any hosting platform.
+
+### Run the web app locally
+
+```bash
+pip install -r requirements.txt -r requirements-web.txt
+python app.py                      # http://localhost:8000
+```
+
+`GET /health` returns `{"status": "ok"}` for uptime checks. Environment variables: `PORT` (default 8000) and
+`MAX_UPLOAD_MB` (default 25).
+
+### Run it in Docker
+
+```bash
+docker build -t redactiontool .
+docker run --rm -p 8000:8000 redactiontool          # http://localhost:8000
+```
+
+The image runs `gunicorn` as an unprivileged user and honours the `PORT` variable that hosting platforms set.
+
+### Deploy on Render (free tier available)
+
+1. Push the repository to GitHub.
+2. In Render choose **New > Web Service**, connect the repository and select the `main` branch.
+3. Render detects the `Dockerfile` and builds it. Set the **Health Check Path** to `/health`.
+4. Choose an instance type and click **Create Web Service**. Render provides an HTTPS URL when the build finishes.
+
+Without Docker, use the same service with build command `pip install -r requirements.txt -r requirements-web.txt` and start
+command `gunicorn app:app --workers 2 --timeout 120`. The Docker image also runs on Fly.io, Railway, Google Cloud Run,
+Azure Container Apps and AWS App Runner.
+
+### Before exposing it to real users
+
+- The page has **no login**. For sensitive documents run it inside a private network or behind an authenticating proxy.
+- Uploads are processed in a temporary folder that is deleted before the response is sent; nothing is stored or logged.
+- Free tiers put idle services to sleep, so the first request after a pause can take several seconds.
+- Very large documents take longer; raise `--timeout` in the start command and `MAX_UPLOAD_MB` if needed.
+
 ## Project structure
 
 ```
 RedactionTool/
 ├── redact.py                     Command-line entry point
-├── requirements.txt              python-docx, lxml
+├── app.py                        Web app: upload a .docx, download the redacted copy
+├── Dockerfile                    Container image for the web app
+├── requirements.txt              Core dependencies: python-docx, lxml
+├── requirements-web.txt          Web dependencies: flask, gunicorn
 ├── pii_redactor/                 The redaction library
 │   ├── engine.py                 Redactor: learn pass, detect, replace, write the .docx
 │   ├── docx_io.py                Word text and runs, table-cell blocks, safe in-place edits
